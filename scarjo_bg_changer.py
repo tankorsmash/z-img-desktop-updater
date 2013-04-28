@@ -70,7 +70,8 @@ def save_image(image_url):
     image_path = IMAGE_PATH
 
     with open(image_path, 'wb') as f:
-        r = requests.get(image_url)
+        headers = {'user-agent': "z-img-desktop-updater"}
+        r = requests.get(image_url, headers=headers)
         f.write(r.content)
         print "done writing to IMAGE_PATH:", image_path
 
@@ -127,8 +128,12 @@ def main(query=None):
 if __name__ == "__main__":
 
     #uses a query to search
-    # main("scarlett johansson")
+    main("scarlett johansson")
 
-    #pulls a query from a text file instead
-    main()
+    #pulls a query from a text file instead, calling main() without args
+    # from time import sleep
+    # while True:
+    #     main()
+    #     #30 minutes
+    #     sleep(60 * 30)
 
