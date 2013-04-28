@@ -3,9 +3,6 @@ import ctypes, random
 import requests, bs4
 import ipdb
 
-
-
-
 #search for image
 def search_image(query):
 
@@ -24,7 +21,6 @@ def download_image(query):
     html = r.text
 
     image_url = parse_for_image_url(html)
-
     image_path = save_image(image_url)
 
     return image_path
@@ -33,6 +29,7 @@ def download_image(query):
 #parse for image
 def parse_for_image_url(html):
 
+    #fix for python crashing, fixed in 2.4.5 lxml, I'm pretty sure
     html = html.replace(r"<!DOCTYPE>", "")
 
     soup = bs4.BeautifulSoup(html)
@@ -70,8 +67,12 @@ def save_image(image_url):
 def set_wallpaper(image_path):
 
     SPI_SETDESKWALLPAPER = 20
-    ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER,
+    sucessful = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER,
                                                0, image_path, 0)
+
+    if not sucessful:
+        print "Use recursion to force it"
+        set_wallpaper(image_path)
 
 
 def main(query):
@@ -82,4 +83,4 @@ def main(query):
 
 if __name__ == "__main__":
 
-    main("katy perry")
+    main("scarlett johansson")
