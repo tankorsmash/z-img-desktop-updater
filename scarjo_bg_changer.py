@@ -83,9 +83,9 @@ def set_wallpaper(image_path):
     sucessful = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER,
                                                0, image_path, 0)
 
-    if not sucessful:
-        print "Use recursion to force it"
-        set_wallpaper(image_path)
+    # if not sucessful:
+    #     print "Use recursion to force it"
+    #     set_wallpaper(image_path)
 
 
 def query_to_wallpaper(query):
@@ -107,7 +107,7 @@ def main(query):
 
         query = random.choice(queries)
 
-    query_to_wallpaper(query)
+    query_to_wallpaper(query + " hot")
 
 
 
