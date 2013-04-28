@@ -14,7 +14,7 @@ looks up a random "Scarlett Johansson hot" image, and sets it as your background
 does something similar, but instead pulls a name from `searches.txt` and uses
 that as the query instead.
 
-##ISSUES:
+##Issues:
 
 * If a request.get call fails, the whole thing crashes.
     * Handle exceptions
@@ -23,7 +23,7 @@ that as the query instead.
     * Figure out how to go to next page of search results,
         or get more images in one query
 
-##TODO:
+##Todo:
 
 * Add ignore urls, so you don't get the same less desirable watermarks
 * Some sort of file organization or limit. Right now, there's not limit on
