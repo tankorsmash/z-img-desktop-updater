@@ -15,6 +15,7 @@ does something similar, but instead pulls a name from `searches.txt` and uses
 that as the query instead.
 
 ISSUES:
+
     * If a request.get call fails, the whole thing crashes.
         * Handle exceptions
     * The search results are always the first page, so if you use this script
@@ -23,6 +24,7 @@ ISSUES:
           or get more images in one query
 
 TODO:
+
     * Add ignore urls, so you don't get the same less desirable watermarks
     * Some sort of file organization or limit. Right now, there's not limit on
       the images it saves and keeps on your harddrive
