@@ -8,7 +8,7 @@ text file called searches.txt, which is just a list a names from subreddits like
 
 """
 
-import ctypes, random
+import ctypes, random, re
 #both of these are on pip, I'm sure
 import requests, bs4
 import ipdb
@@ -18,30 +18,33 @@ SEARCHES_TXT = r"searches.txt"
 IMAGE_PATH = r"c:/scarjo.jpg"
 
 #search for image
-def search_image(query):
+def search_image(query, engine):
 
-    image_path = download_image(query)
+    image_path = download_image(query, 'bing')
 
     return image_path
 
 
 #download image
-def download_image(query):
+def download_image(query, engine='zlib'):
 
     parsed_query = query.strip().replace(" ", '+')
-    # url = r"https://www.google.com/search?safe=off&hl=en&site=imghp&tbs=isz:l&tbm=isch&sa=1&q={query}".format(query=parsed_query)
-    url = r"http://z-img.com/search.php?&ssg=off&size=large&q={query}".format(query=parsed_query)
-    r = requests.get(url)
-    html = r.text
 
-    image_url = parse_for_image_url(html)
+    if engine == 'zlib':
+        image_url = parse_zlib_for_image_url(query)
+    elif engine == 'bing':
+        image_url = parse_bing_for_image_url(query)
     image_path = save_image(image_url)
 
     return image_path
 
 
 #parse for image
-def parse_for_image_url(html):
+def parse_zlib_for_image_url(query):
+    # url = r"https://www.google.com/search?safe=off&hl=en&site=imghp&tbs=isz:l&tbm=isch&sa=1&q={query}".format(query=parsed_query)
+    url = r"http://z-img.com/search.php?&ssg=off&size=large&q={query}".format(query=query)
+    r = requests.get(url)
+    html = r.text
 
     #fix for python crashing, fixed in 2.4.5 lxml, I'm pretty sure
     html = html.replace(r"<!DOCTYPE>", "")
@@ -63,6 +66,29 @@ def parse_for_image_url(html):
     #select a random image
     image_url = random.choice(good_links)
 
+    return image_url
+
+def parse_bing_for_image_url(html):
+    url = r'http://www.bing.com/images/search?q=scarlett+johansson&qft=%2Bfilterui%3Aimagesize-large'
+
+    r = requests.get(url)
+    soup = bs4.BeautifulSoup(r.content)
+    res = soup.findAll('div', {'class': 'dg_u'})
+
+    good_links = []
+
+    for div in res:
+        a_elem = div.find('a')
+        m_attr = a_elem.get('m')
+        if m_attr:
+            dirty_url = m_attr.split('oi:')[-1]
+            pattern = "http:.*.jpg"
+            matches = re.findall(pattern, dirty_url)
+            if matches:
+                cleaned_url = matches[0]
+                good_links.append(cleaned_url)
+
+    image_url = random.choice(good_links)
     return image_url
 
 
@@ -90,8 +116,8 @@ def set_wallpaper(image_path):
         use_random_image()
 
 
-def query_to_wallpaper(query):
-    image_path = search_image(query)
+def query_to_wallpaper(query, engine= 'zlib'):
+    image_path = search_image(query, engine)
     set_wallpaper(image_path)
 
     return image_path
@@ -115,10 +141,8 @@ def use_random_image():
 def main(query=None):
 
     if query:
-        query = query_from_list()
         #if you don't add 'hot' you can get all sorts of unwanted images
         query_to_wallpaper(query + " hot")
-
     else:
         use_random_image()
 
@@ -135,5 +159,5 @@ if __name__ == "__main__":
     # while True:
     #     main()
     #     #30 minutes
-    #     sleep(60 * 30)
+    #     sleep(60 * 5)
 
