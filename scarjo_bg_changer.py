@@ -6,17 +6,32 @@ Some other searches, as featured in several subreddit sidebars are located in a
 text file called searches.txt, which is just a list a names from subreddits like
 /r/gentlemanboners
 
+ISSUES:
+    * If a request.get call fails, the whole thing crashes.
+        + Handle exceptions
+    * The search results are always the first page, so if you use this script
+      too often, you'll always have the same pool of images
+        + Figure out how to go to next page of search results,
+          or get more images in one query
+
+TODO:
+    * Add ignore urls, so you don't get the same less desirable watermarks
+    * Some sort of file organization or limit. Right now, there's not limit on
+      the images it saves and keeps on your harddrive
+    * Size limits. Can be any size deemed 'large' by the engine. It'd be nice
+      to be able to specify dimensions
 """
 
 
-import ctypes, random, re
+import ctypes, random, re, os, itertools
 
 #both of these are on pip, I'm sure
 import requests, bs4
 
 
 SEARCHES_TXT = r"searches.txt"
-IMAGE_PATH = r"c:/scarjo.jpg"
+IMAGE_FILENAME = r"wallpaper.jpg"
+IMAGE_DIR = r"c:/images/"
 
 #search for image
 def search_image(query, engine):
@@ -39,10 +54,10 @@ def download_image(query, engine='zimg'):
     parsed_query = query.strip().replace(" ", '+')
 
     if engine == 'zimg':
-        image_url = parse_zimg_for_image_url(query)
+        image_url = parse_zimg_for_image_url(parsed_query)
     elif engine == 'bing':
-        image_url = parse_bing_for_image_url(query)
-    image_path = save_image(image_url)
+        image_url = parse_bing_for_image_url(parsed_query)
+    image_path = save_image(image_url, query)
 
     return image_path
 
@@ -53,7 +68,7 @@ def parse_zimg_for_image_url(query):
     Pulls all the image links from a Z-Img.com page, which is just a nice wrapper
     for the Google Image Search
     """
-    print 'using zimg'
+    print 'Using z-img.com as a search engine'
     # url = r"https://www.google.com/search?safe=off&hl=en&site=imghp&tbs=isz:l&tbm=isch&sa=1&q={query}".format(query=parsed_query)
     url = r"http://z-img.com/search.php?&ssg=off&size=large&q={query}".format(query=query)
     r = requests.get(url)
@@ -86,7 +101,7 @@ def parse_bing_for_image_url(query):
     """
     Pulls all the image links from a Bing Image Search
     """
-    print 'using bing'
+    print 'Using bing.com as a search engine'
     url = r'http://www.bing.com/images/search?q={query}&qft=%2Bfilterui%3Aimagesize-large'.format(query=query)
 
     r = requests.get(url)
@@ -113,20 +128,61 @@ def parse_bing_for_image_url(query):
     return image_url
 
 
-def save_image(image_url):
+#http://snipplr.com/view.php?codeview&id=41834
+def unique_file_name(file):
+    ''' Append a counter to the end of file name if
+    such file already exist.'''
+    if not os.path.isfile(file):
+        # do nothing if such file doesn exists
+        return file
+    # test if file has extension:
+    if re.match('.+\.[a-zA-Z0-9]+$', os.path.basename(file)):
+        # yes: append counter before file extension.
+        name_func = \
+            lambda f, i: re.sub('(\.[a-zA-Z0-9]+)$', '_%i\\1' % i, f)
+    else:
+        # filename has no extension, append counter to the file end
+        name_func = \
+            lambda f, i: ''.join([f, '_%i' % i])
+    for new_file_name in \
+            (name_func(file, i) for i in itertools.count(1)):
+        if not os.path.exists(new_file_name):
+            return new_file_name
+
+
+def save_image(image_url, query=None):
     """
     Saves the given image_url and returns the local file path that it was
     saved to.
     """
-    image_path = IMAGE_PATH
+    if not os.path.exists(IMAGE_DIR): os.makedirs(IMAGE_DIR)
 
-    with open(image_path, 'wb') as f:
+    #use the query as a filename if possible, otherwise use preset image_path
+    if not query:
+        image_path = IMAGE_FILENAME
+        proper_image_path = clean_query_for_filepath(image_path)
+    else:
+        proper_image_path = clean_query_for_filepath(query)
+
+    with open(proper_image_path, 'wb') as f:
         headers = {'user-agent': "z-img-desktop-updater"}
         r = requests.get(image_url, headers=headers)
         f.write(r.content)
-        print "done writing to IMAGE_PATH:", image_path
+        print "Saved image to:", proper_image_path
 
-    return image_path
+    return proper_image_path
+
+def clean_query_for_filepath(query):
+    #replace spaces and non filename chars
+    dirty_string = query.replace(' ', '_')
+    keepcharacters = ('.','_')
+    image_path = "".join(c for c in dirty_string if c.isalnum() or c in keepcharacters).rstrip()
+    if not image_path.endswith('.jpg'):
+        image_path = image_path + '.jpg'
+    possible_image_path = os.path.join(IMAGE_DIR, image_path)
+    proper_image_path = unique_file_name(possible_image_path)
+
+    return proper_image_path
 
 
 #set as wallpapper
@@ -187,10 +243,11 @@ if __name__ == "__main__":
 
     #uses a query to search, second param is either 'zimg' or 'bing'
     # main("scarlett johansson", 'bing')
+    main(engine='bing')
 
     #pulls a query from a text file instead, calling main() without args
-    from time import sleep
-    while True:
-        main(engine='bing')
-        #30 minutes
-        sleep(60 * 5)
+    # from time import sleep
+    # while True:
+    #     main(engine='bing')
+    #     #5 minutes
+    #     sleep(60 * 5)
