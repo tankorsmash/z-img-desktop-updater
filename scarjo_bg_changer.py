@@ -1,7 +1,20 @@
+"""
+Written for Python 2.7 on Windows 7x64
+
+
+Some other searches, as featured in several subreddit sidebars are located in a
+text file called searches.txt, which is just a list a names from subreddits like
+/r/gentlemanboners
+
+"""
+
 import ctypes, random
 #both of these are on pip, I'm sure
 import requests, bs4
 import ipdb
+
+
+SEARCHES_TXT = r"searches.txt"
 
 #search for image
 def search_image(query):
@@ -75,12 +88,31 @@ def set_wallpaper(image_path):
         set_wallpaper(image_path)
 
 
-def main(query):
-
+def query_to_wallpaper(query):
     image_path = search_image(query)
     set_wallpaper(image_path)
+
+    return image_path
+
+
+#choose a random name from the list and set that as wallpaper
+def query_from_list_to_wallpaper(query_list):
+    pass
+
+def main(query):
+
+
+    with open(SEARCHES_TXT) as f:
+        queries = f.readlines()
+
+        query = random.choice(queries)
+
+    query_to_wallpaper(query)
+
+
 
 
 if __name__ == "__main__":
 
     main("scarlett johansson")
+
