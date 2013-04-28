@@ -83,9 +83,9 @@ def set_wallpaper(image_path):
     sucessful = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER,
                                                0, image_path, 0)
 
-    # if not sucessful:
-    #     print "Use recursion to force it"
-    #     set_wallpaper(image_path)
+    if not sucessful:
+        print "Use recursion to choose another image at random"
+        use_random_image()
 
 
 def query_to_wallpaper(query):
@@ -96,16 +96,23 @@ def query_to_wallpaper(query):
 
 
 #choose a random name from the list and set that as wallpaper
-def query_from_list_to_wallpaper(query_list):
-    pass
-
-def main(query):
-
+def query_from_list():
 
     with open(SEARCHES_TXT) as f:
         queries = f.readlines()
-
         query = random.choice(queries)
+
+    return query
+
+
+def use_random_image():
+    query = query_from_list()
+    query_to_wallpaper(query + " hot")
+
+
+def main(query):
+
+    query = query_from_list()
 
     query_to_wallpaper(query + " hot")
 
