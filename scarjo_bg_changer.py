@@ -20,18 +20,18 @@ IMAGE_PATH = r"c:/scarjo.jpg"
 #search for image
 def search_image(query, engine):
 
-    image_path = download_image(query, 'bing')
+    image_path = download_image(query, engine)
 
     return image_path
 
 
 #download image
-def download_image(query, engine='zlib'):
+def download_image(query, engine='zimg'):
 
     parsed_query = query.strip().replace(" ", '+')
 
-    if engine == 'zlib':
-        image_url = parse_zlib_for_image_url(query)
+    if engine == 'zimg':
+        image_url = parse_zimg_for_image_url(query)
     elif engine == 'bing':
         image_url = parse_bing_for_image_url(query)
     image_path = save_image(image_url)
@@ -40,7 +40,8 @@ def download_image(query, engine='zlib'):
 
 
 #parse for image
-def parse_zlib_for_image_url(query):
+def parse_zimg_for_image_url(query):
+    print 'using zimg'
     # url = r"https://www.google.com/search?safe=off&hl=en&site=imghp&tbs=isz:l&tbm=isch&sa=1&q={query}".format(query=parsed_query)
     url = r"http://z-img.com/search.php?&ssg=off&size=large&q={query}".format(query=query)
     r = requests.get(url)
@@ -69,6 +70,7 @@ def parse_zlib_for_image_url(query):
     return image_url
 
 def parse_bing_for_image_url(html):
+    print 'using bing'
     url = r'http://www.bing.com/images/search?q=scarlett+johansson&qft=%2Bfilterui%3Aimagesize-large'
 
     r = requests.get(url)
@@ -105,7 +107,7 @@ def save_image(image_url):
 
 
 #set as wallpapper
-def set_wallpaper(image_path):
+def set_wallpaper(image_path, engine='zimg'):
 
     SPI_SETDESKWALLPAPER = 20
     sucessful = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER,
@@ -113,10 +115,10 @@ def set_wallpaper(image_path):
 
     if not sucessful:
         print "Use recursion to choose another image at random"
-        use_random_image()
+        use_random_image(engine)
 
 
-def query_to_wallpaper(query, engine= 'zlib'):
+def query_to_wallpaper(query, engine='zimg'):
     image_path = search_image(query, engine)
     set_wallpaper(image_path)
 
@@ -133,26 +135,26 @@ def query_from_list():
     return query
 
 
-def use_random_image():
+def use_random_image(engine):
     query = query_from_list()
-    query_to_wallpaper(query + " hot")
+    query_to_wallpaper(query + " hot", engine)
 
 
-def main(query=None):
+def main(query=None, engine='zimg'):
 
     if query:
         #if you don't add 'hot' you can get all sorts of unwanted images
-        query_to_wallpaper(query + " hot")
+        query_to_wallpaper(query + " hot", engine)
     else:
-        use_random_image()
+        use_random_image(engine)
 
 
 
 
 if __name__ == "__main__":
 
-    #uses a query to search
-    main("scarlett johansson")
+    #uses a query to search, second param is either 'zimg' or 'bing'
+    main("scarlett johansson", 'bing')
 
     #pulls a query from a text file instead, calling main() without args
     # from time import sleep

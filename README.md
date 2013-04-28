@@ -5,7 +5,7 @@ I use this to ping z-img.com with a search query and then parse their page for t
 
 ##Example:
 
-    main("Scarlett Johansson")
+    main("Scarlett Johansson", 'zimg') #or 'bing' for Bing Images
 
 looks up a random "Scarlett Johansson hot" image, and sets it as your background
 
