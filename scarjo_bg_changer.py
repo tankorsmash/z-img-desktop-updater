@@ -15,6 +15,7 @@ import ipdb
 
 
 SEARCHES_TXT = r"searches.txt"
+IMAGE_PATH = r"c:/scarjo.jpg"
 
 #search for image
 def search_image(query):
@@ -66,12 +67,12 @@ def parse_for_image_url(html):
 
 
 def save_image(image_url):
-    image_path = r'c:/scarjo.jpg'
+    image_path = IMAGE_PATH
 
     with open(image_path, 'wb') as f:
         r = requests.get(image_url)
         f.write(r.content)
-        print "done writing to", image_path
+        print "done writing to IMAGE_PATH:", image_path
 
     return image_path
 
@@ -110,16 +111,24 @@ def use_random_image():
     query_to_wallpaper(query + " hot")
 
 
-def main(query):
+def main(query=None):
 
-    query = query_from_list()
+    if query:
+        query = query_from_list()
+        #if you don't add 'hot' you can get all sorts of unwanted images
+        query_to_wallpaper(query + " hot")
 
-    query_to_wallpaper(query + " hot")
+    else:
+        use_random_image()
 
 
 
 
 if __name__ == "__main__":
 
-    main("scarlett johansson")
+    #uses a query to search
+    # main("scarlett johansson")
+
+    #pulls a query from a text file instead
+    main()
 
