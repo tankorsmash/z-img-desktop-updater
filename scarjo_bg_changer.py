@@ -61,6 +61,19 @@ def download_image(query, engine='zimg'):
 
     return image_path
 
+#from http://stackoverflow.com/a/1131255/541208
+def md5_for_file(f, block_size=2**20):
+    """
+    Gets the md5 representation of the file, used for checking for file duplicates
+    """
+    md5 = hashlib.md5()
+    while True:
+        data = f.read(block_size)
+        if not data:
+            break
+        md5.update(data)
+    return md5.hexdigest()
+
 
 #parse for image
 def parse_zimg_for_image_url(query):
@@ -197,6 +210,8 @@ def set_wallpaper(image_path, engine='zimg'):
     if not sucessful:
         print "Use recursion to choose another image at random"
         use_random_image(engine)
+    else:
+        print "Sucessfully set wallpaper to", image_path
 
 
 def query_to_wallpaper(query, engine='zimg'):
