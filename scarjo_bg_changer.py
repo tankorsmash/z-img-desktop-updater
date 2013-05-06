@@ -28,6 +28,11 @@ import ctypes, random, re, os, itertools
 #both of these are on pip, I'm sure
 import requests, bs4
 
+#PIL
+import Image
+import ImageDraw
+import ImageFont
+
 
 SEARCHES_TXT = r"searches.txt"
 IMAGE_FILENAME = r"wallpaper.jpg"
@@ -208,10 +213,12 @@ def set_wallpaper(image_path, engine='zimg'):
     sucessful = ctypes.windll.user32.SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, image_path, 0)
 
     if not sucessful:
-        print "Use recursion to choose another image at random"
+        print "Try to load a random image from the web instead, since this one didn't work"
         use_random_image(engine)
     else:
         print "Sucessfully set wallpaper to", image_path
+
+    return image_path
 
 
 def query_to_wallpaper(query, engine='zimg'):
@@ -225,7 +232,7 @@ def query_to_wallpaper(query, engine='zimg'):
     return image_path
 
 
-def query_from_list():
+def choose_query_from_list():
     """
     Choose a random name from the list of queries and set that as wallpaper
     """
@@ -237,21 +244,73 @@ def query_from_list():
     return query
 
 
+def get_bottom_corner_position(image, msg, font, h_offset=25, v_offset=0):
+    """
+    Expects a PIL Image and ImageFont, along with the message to print. The offsets
+    are the offset from the screen corners, after the text size is calculated.
+    """
+
+    image_size = image.size
+
+    font_height = font.getsize(msg)[1]
+    font_width = font.getsize(msg)[0]
+
+    x = image_size[0] - h_offset - font_width
+    y = image_size[1] - v_offset - font_height
+    bottom_corner_pos = x , y
+
+    return bottom_corner_pos
+
+
 def use_random_image(engine):
     """
     Used to pull an image from one of the queries in the searches.txt file
     """
-    query = query_from_list()
-    query_to_wallpaper(query + " hot", engine)
+    query = choose_query_from_list()
+    image_path = query_to_wallpaper(query + " hot", engine)
+
+    image = load_pil_image(image_path, query)
+
+    return image_path
+
+
+def load_pil_image(image_path, msg="default text"):
+
+    image = Image.open(image_path)
+    # print "image size:", image.size
+
+    font = ImageFont.load_default()
+
+    #get the position of the image to draw at
+    text_pos = get_bottom_corner_position(image, msg, font)
+
+    #draw the text to the image
+    draw = ImageDraw.Draw(image)
+    red = (205,10, 10)
+    draw.text(text_pos, msg, fill=red, font=font)
+
+
+    #save the new image with text on it
+    with open(image_path, 'wb') as f:
+        image.save(f, 'jpeg')
+
+    #reset the wallpaper
+    set_wallpaper(image_path)
+
+    return image
 
 
 def main(query=None, engine='zimg'):
 
     if query:
-        #if you don't add 'hot' you can get all sorts of unwanted images
-        query_to_wallpaper(query + " hot", engine)
+        full_query = query + " hot"
+        image_path = query_to_wallpaper(full_query, engine)
+        image = load_pil_image(image_path, full_query)
+
     else:
-        use_random_image(engine)
+        image_path = use_random_image(engine)
+
+
 
 
 if __name__ == "__main__":
