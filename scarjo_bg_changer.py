@@ -279,7 +279,8 @@ def load_pil_image(image_path, msg="default text"):
     image = Image.open(image_path)
     # print "image size:", image.size
 
-    font = ImageFont.load_default()
+    font = ImageFont.truetype(r"C:\Program Files (x86)\Razer\Synapse\fonts\HelveticaNeueLTPro-Roman.otf", 20)
+    # font = ImageFont.load_default()
 
     #get the position of the image to draw at
     text_pos = get_bottom_corner_position(image, msg, font)
